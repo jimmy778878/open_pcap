@@ -13,26 +13,22 @@
 void handle_ip(const u_char * content)
 {
 	struct ip *ip = (struct ip *)(content + ETHER_HDR_LEN);
-	u_char protocol = ip->ip_p;
-	char source_ip[INET_ADDRSTRLEN];
-	char destination_ip[INET_ADDRSTRLEN];
-
-	memset(source_ip,0,sizeof(source_ip));
-	memset(destination_ip,0,sizeof(destination_ip));
-
-	inet_ntop(AF_INET,&ip->ip_src,source_ip,sizeof(source_ip));
-	inet_ntop(AF_INET,&ip->ip_dst,destination_ip,sizeof(destination_ip));
-	printf("source ip : %s\n",source_ip);	
+	
+	char *source_ip = malloc(INET_ADDRSTRLEN*sizeof(char));
+	char *destination_ip = malloc(INET_ADDRSTRLEN*sizeof(char));
+	inet_ntop(AF_INET , &ip->ip_src , source_ip , INET_ADDRSTRLEN*sizeof(char));
+	inet_ntop(AF_INET , &ip->ip_dst , destination_ip , INET_ADDRSTRLEN*sizeof(destination_ip));
+	printf("source ip : %s\n",source_ip);   
 	printf("destination ip : %s\n\n",destination_ip);
-
-	if(protocol==IPPROTO_TCP){
+	
+	
+	if(ip->ip_p==IPPROTO_TCP){
 	        printf("TCP : ");
 	        struct tcphdr *tcp = (struct tcphdr*)(content + ETHER_HDR_LEN  + (4 * ip->ip_hl));
-
         	printf("\tsource port : %5u\n",ntohs(tcp->th_sport));
 	        printf("\tdestination port : %5u\n",ntohs(tcp->th_dport));
 	}
-	else if(protocol==IPPROTO_UDP){
+	else if(ip->ip_p==IPPROTO_UDP){
 		printf("UDP : ");
 		struct udphdr *udp = (struct udphdr*)(content + ETHER_HDR_LEN + (4 * ip->ip_hl));
 		printf("\tsource port : %5u\n",ntohs(udp->uh_sport));
@@ -61,16 +57,13 @@ int main(int argc,char *argv[])
 			char time[32];
 			strftime(time , sizeof(time) , "%Y/%m/%d %X" , localtime(&header->ts.tv_sec));	
 			printf("timestamp : %s\n\n" , time );
-		
-			char dst_mac[32];
-			char src_mac[32];
-			struct ether_header *ethernet = (struct ether_header *)content;
-			u_char * s_mac = ethernet->ether_shost;
-			u_char * d_mac = ethernet->ether_dhost;
-        		sprintf(src_mac, "%02x:%02x:%02x:%02x:%02x:%02x", s_mac[0], s_mac[1], s_mac[2], s_mac[3], s_mac[4], s_mac[5]);
-			sprintf(dst_mac, "%02x:%02x:%02x:%02x:%02x:%02x", d_mac[0], d_mac[1], d_mac[2], d_mac[3], d_mac[4], d_mac[5]);
-			printf("source MAC : %s\n",src_mac);
-			printf("destination MAC : %s\n",dst_mac);
+			
+                        struct ether_header *ethernet = (struct ether_header *)content;
+                      	u_char *s = ethernet->ether_shost;
+			u_char *d = ethernet->ether_dhost;
+			printf("source MAC : %02x:%02x:%02x:%02x:%02x:%02x\n",*s,*(s+1),*(s+2),*(s+3),*(s+4),*(s+5));
+                        printf("destination MAC : %02x:%02x:%02X:%02x:%02X:%02x\n",*d,*(d+1),*(d+2),*(d+3),*(d+4),*(d+5));
+
 			printf("\n");	
 
 			if(ntohs(ethernet->ether_type) == ETHERTYPE_IP){
