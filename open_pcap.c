@@ -14,8 +14,8 @@ void handle_ip(const u_char * content)
 {
 	struct ip *ip = (struct ip *)(content + ETHER_HDR_LEN);
 	
-	char *source_ip = malloc(INET_ADDRSTRLEN*sizeof(char));
-	char *destination_ip = malloc(INET_ADDRSTRLEN*sizeof(char));
+	char *source_ip = calloc(INET_ADDRSTRLEN , sizeof(char));
+	char *destination_ip = calloc(INET_ADDRSTRLEN , sizeof(char));
 	inet_ntop(AF_INET , &ip->ip_src , source_ip , INET_ADDRSTRLEN*sizeof(char));
 	inet_ntop(AF_INET , &ip->ip_dst , destination_ip , INET_ADDRSTRLEN*sizeof(destination_ip));
 	printf("source ip : %s\n",source_ip);   
