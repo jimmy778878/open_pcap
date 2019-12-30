@@ -9,7 +9,7 @@
 #include<netinet/ip.h>
 #include<netinet/tcp.h>
 #include<netinet/udp.h>
-
+#include<netinet/ether.h>
 void handle_ip(const u_char * content)
 {
 	struct ip *ip = (struct ip *)(content + ETHER_HDR_LEN);
@@ -25,14 +25,14 @@ void handle_ip(const u_char * content)
 	if(ip->ip_p==IPPROTO_TCP){
 	        printf("TCP : ");
 	        struct tcphdr *tcp = (struct tcphdr*)(content + ETHER_HDR_LEN  + (4 * ip->ip_hl));
-        	printf("\tsource port : %5u\n",ntohs(tcp->th_sport));
-	        printf("\tdestination port : %5u\n",ntohs(tcp->th_dport));
+        	printf("\tsource port : %d\n",ntohs(tcp->source));
+	        printf("\tdestination port : %d\n",ntohs(tcp->dest));
 	}
 	else if(ip->ip_p==IPPROTO_UDP){
 		printf("UDP : ");
 		struct udphdr *udp = (struct udphdr*)(content + ETHER_HDR_LEN + (4 * ip->ip_hl));
-		printf("\tsource port : %5u\n",ntohs(udp->uh_sport));
-                printf("\tdestination port : %5u\n",ntohs(udp->uh_dport));
+		printf("\tsource port : %d\n",ntohs(udp->source));
+                printf("\tdestination port : %d\n",ntohs(udp->dest));
 
 	}	
 }
@@ -62,7 +62,7 @@ int main(int argc,char *argv[])
                       	u_char *s = ethernet->ether_shost;
 			u_char *d = ethernet->ether_dhost;
 			printf("source MAC : %02x:%02x:%02x:%02x:%02x:%02x\n",*s,*(s+1),*(s+2),*(s+3),*(s+4),*(s+5));
-                        printf("destination MAC : %02x:%02x:%02X:%02x:%02X:%02x\n",*d,*(d+1),*(d+2),*(d+3),*(d+4),*(d+5));
+                        printf("destination MAC : %02x:%02x:%02x:%02x:%02x:%02x\n",*d,*(d+1),*(d+2),*(d+3),*(d+4),*(d+5));
 
 			printf("\n");	
 
