@@ -9,7 +9,7 @@
 #include<netinet/ip.h>
 #include<netinet/tcp.h>
 #include<netinet/udp.h>
-#include<netinet/ether.h>
+
 void handle_ip(const u_char * content)
 {
 	struct ip *ip = (struct ip *)(content + ETHER_HDR_LEN);
