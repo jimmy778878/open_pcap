@@ -9,6 +9,14 @@
 #include<netinet/ip.h>
 #include<netinet/tcp.h>
 #include<netinet/udp.h>
+#define case1
+//#define case2
+struct ip_counter{
+	char s[INET_ADDRSTRLEN];
+	char d[INET_ADDRSTRLEN];
+	int count;
+}ip_counter[100];
+int ip_pair=0;
 
 void handle_ip(const u_char * content)
 {
@@ -18,6 +26,37 @@ void handle_ip(const u_char * content)
 	char *destination_ip = calloc(INET_ADDRSTRLEN , sizeof(char));
 	inet_ntop(AF_INET , &ip->ip_src , source_ip , INET_ADDRSTRLEN*sizeof(char));
 	inet_ntop(AF_INET , &ip->ip_dst , destination_ip , INET_ADDRSTRLEN*sizeof(destination_ip));
+
+#ifdef case1
+	int i=0,find=0;
+	for(i=0;i<ip_pair;i++){
+		if(( strcmp(ip_counter[i].s , source_ip)||strcmp(ip_counter[i].d , destination_ip) )==0){
+			find=1;
+			ip_counter[i].count++;
+		}
+	}
+#endif
+#ifdef case2
+	int i=0,find=0;
+	for(i=0;i<ip_pair;i++){
+		if(( strcmp(ip_counter[i].s , source_ip)||strcmp(ip_counter[i].d , destination_ip) )==0){
+			find=1;
+			ip_counter[i].count++;
+		}
+		else if(( strcmp(ip_counter[i].s , destination_ip)||strcmp(ip_counter[i].d , source_ip) )==0){
+			find=1;
+			ip_counter[i].count++;
+		}
+	}
+#endif
+
+	if(!find){
+		ip_pair++;
+		strcpy(ip_counter[i].s , source_ip);
+		strcpy(ip_counter[i].d , destination_ip);
+		ip_counter[i].count=1;
+	}
+
 	printf("source ip : %s\n",source_ip);   
 	printf("destination ip : %s\n\n",destination_ip);
 	
@@ -67,7 +106,6 @@ int main(int argc,char *argv[])
 			printf("\n");	
 
 			if(ntohs(ethernet->ether_type) == ETHERTYPE_IP){
-				ip_packet_count++;
 				handle_ip(content);			
 			}
 			printf("\n----------------------------------------------\n\n");
@@ -76,7 +114,26 @@ int main(int argc,char *argv[])
 			break;
 		}	
 	}
-	printf("total ip packets : %d\n",ip_packet_count);
+
+	printf("----------------------------------------------\n");
+#ifdef case1
+	for(int i=0;i<ip_pair;i++){
+		printf("pair %d : \n",i);
+		printf("source ip : %s\n",ip_counter[i].s);
+		printf("destination ip : %s\n",ip_counter[i].d);
+		printf("pair amount: %d\n",ip_counter[i].count);
+		printf("------------------------\n\n");
+	}
+#endif
+#ifdef case2
+	for(int i=0;i<ip_pair;i++){
+                printf("pair %d : \n",i);
+                printf("ip1 : %s\n",ip_counter[i].s);
+                printf("ip2 : %s\n",ip_counter[i].d);
+                printf("pair amount: %d\n",ip_counter[i].count);
+                printf("------------------------\n\n");
+        }
+#endif
 	pcap_close(handle);
 	return 0;
 }
